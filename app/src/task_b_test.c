@@ -30,7 +30,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  *
- * @file   : task_a.c
+ * @file   : task_b_test.c
  * @date   : Set 26, 2023
  * @author : Juan Manuel Cruz <jcruz@fi.uba.ar> <jcruz@frba.utn.edu.ar>
  * @version	v1.0.0
@@ -47,57 +47,84 @@
 /* Application & Tasks includes. */
 #include "board.h"
 #include "app.h"
+#include "task_b_fsm.h"
 
 /********************** macros and definitions *******************************/
-#define G_TASK_A_CNT_INI	0u
+#define G_TASK_B_TEST_CNT_INI	0u
 
-#define TASK_A_CNT_INI		0u
-#define TASK_A_CNT_MAX		100000u
+#define TASK_B_TEST_CNT_INI		0u
+#define TASK_B_TEST_CNT_MAX		100000u
 
-#define TASK_A_DEL_INI		0u
-#define TASK_A_DEL_MAX		20u
+#define TASK_B_TEST_DEL_INI		0u
+#define TASK_B_TEST_DEL_MAX		5000u
+
+//typedef enum {TEST_0, TEST_1, TEST_2} test_x_t;
+#define TASK_B_TEST_0 (0)
+#define TASK_B_TEST_1 (1)
+#define TASK_B_TEST_2 (2)
+
+#define TASK_B_TEST_X (TASK_B_TEST_0)
 
 /********************** internal data declaration ****************************/
 
 /********************** internal functions declaration ***********************/
 
 /********************** internal data definition *****************************/
-const char *p_task_a 		= "Task A - Blocking Code";
+const char *p_task_b_test	= "Task B (System Modeling) Test";
+
+#if (TASK_B_TEST_X == TASK_B_TEST_0)
+/* Array of events to excite Task B */
+const e_task_b_t e_task_b_array[] = {EVENT_TASK_B_0, EVENT_TASK_B_1, EVENT_TASK_B_2, EVENT_TASK_B_0, EVENT_TASK_B_1, EVENT_TASK_B_2};
+#endif
+
+#if (TASK_B_TEST_X == TASK_B_TEST_1)
+/* Array of events to excite Task B */
+const e_task_b_t e_task_b_array[] = {EVENT_TASK_B_2 EVENT_TASK_B_1, EVENT_TASK_B_0, EVENT_TASK_B_2 EVENT_TASK_B_1, EVENT_TASK_B_0};
+#endif
+
+#if (TASK_B_TEST_X == TASK_B_TEST_2)
+/* Array of events to excite Task B */
+const e_task_b_t e_task_b_array[] = {EVENT_TASK_B_0, EVENT_TASK_B_1, Event_2, EVENT_TASK_B_2, EVENT_TASK_B_1, EVENT_TASK_B_0};
+#endif
 
 /********************** external data declaration *****************************/
-uint32_t g_task_a_cnt;
+uint32_t g_task_b_test_cnt;
 
 /********************** external functions definition ************************/
-void task_a_init(void *parameters)
+void task_b_test_init(void *parameters)
 {
-	/* Print out: Task Initialized */
-	LOGGER_LOG("  %s is running - %s\r\n", GET_NAME(task_a_init), p_task_a);
+	uint32_t i = TASK_B_TEST_X;
 
-	g_task_a_cnt = G_TASK_A_CNT_INI;
+	/* Print out: Task Initialized */
+	LOGGER_LOG("  %s is running - %s\r\n", GET_NAME(task_b_test_init), p_task_b_test);
+
+	g_task_b_test_cnt = G_TASK_B_TEST_CNT_INI;
 
 	/* Print out: Task execution counter */
-	LOGGER_LOG("   %s = %d\r\n", GET_NAME(g_task_a_cnt), (int)g_task_a_cnt);
+	LOGGER_LOG("   %s = %d\r\n", GET_NAME(g_task_b_test_cnt), (int)g_task_b_test_cnt);
+
+	/* Print out: Array of events to excite Task B */
+	LOGGER_LOG("   %s = %d\r\n", GET_NAME(e_task_b_array), (int)i);
 }
 
-void task_a_update(void *parameters)
+void task_b_test_update(void *parameters)
 {
-	/* Memory Layout of C Programs (https://www.geeksforgeeks.org/) */
-	/* Storage Classes in C (https://www.geeksforgeeks.org/) */
-	/* C Variables (https://www.geeksforgeeks.org/) */
-	/* Local Variable in C (https://www.geeksforgeeks.org/) */
-	/*
-	 * A variable declared within a function or a block of code is called a
-	 * local variable. Local variables are frequently used to temporarily
-	 * store data in a defined scope where they can be accessed and
-	 * manipulated.
-	 */
+
 	#if (TEST_X == TEST_0)
 
-	uint32_t task_a_cnt = TASK_A_CNT_INI;
+	static uint32_t task_b_test_cnt = TASK_B_TEST_CNT_INI;
+	uint32_t i = TASK_B_TEST_X;
+
+	static e_task_b_t event_task_b_test;
+
+	static uint32_t then_task_b_test = TASK_B_TEST_DEL_INI;
+	static uint32_t now_task_b_test  = TASK_B_TEST_DEL_INI;
 
 	#endif
 
 	#if (TEST_X == TEST_1)
+
+	/* Here another code */
 
 	#endif
 
@@ -107,34 +134,40 @@ void task_a_update(void *parameters)
 
 	#endif
 
-	/* Update Task A Counter */
-	g_task_a_cnt++;
+	/* Update Task B Counter */
+	g_task_b_test_cnt++;
 
-	/* Print out: Application Update */
-	LOGGER_LOG("  %s is is running - %s\r\n", GET_NAME(task_a_update), p_task_a);
+	/* Check the current tick */
+	now_task_b_test = HAL_GetTick();
+	if ((now_task_b_test - then_task_b_test) >= TASK_B_TEST_DEL_MAX)
+	{
+		/* Only if the current tick is TASK_B_TEST_DEL_MAX mS after the last */
+		/* Reset then = now */
+		then_task_b_test = now_task_b_test;
 
-	/* Print out: Task execution counter */
-	LOGGER_LOG("   %s = %d\r\n", GET_NAME(g_task_a_cnt), (int)g_task_a_cnt);
+		/* Print out: Application Update */
+		LOGGER_LOG("  %s is is running - %s\r\n", GET_NAME(task_b_test_update), p_task_b_test);
 
-	/* Blocking and Non-Blocking in Node.js (https://www.geeksforgeeks.org/) */
-	/*
-	 * Blocking: It refers to the blocking of further operation until the
-	 * current operation finishes.
-	 * Blocking methods are executed synchronously.
-	 * Synchronously means that the program is executed line by line.
-	 * The program waits until the called function or the operation
-	 * returns.
-	 * */
-	#if (TEST_X == TEST_0)
+		/* Print out: Task execution counter */
+		LOGGER_LOG("   %s = %d\r\n", GET_NAME(g_task_b_test_cnt), (int)g_task_b_test_cnt);
 
-	for (task_a_cnt = TASK_A_CNT_INI; task_a_cnt < TASK_A_CNT_MAX; task_a_cnt++);
+		/* Print out: Array of events to excite Task B */
+		LOGGER_LOG("   %s = %d\r\n", GET_NAME(e_task_b_array), (int)i);
 
-	#endif
+		/* Get the event to excite Task B. */
+		event_task_b_test = e_task_b_array[task_b_test_cnt];
+		g_event_task_b = event_task_b_test;
+		g_b_event_task_b = true;
+
+		if (task_b_test_cnt < (sizeof(e_task_b_array)/sizeof(e_task_b_t)))
+			task_b_test_cnt++;
+		else
+			task_b_test_cnt = TASK_B_TEST_CNT_INI;
+	}
 
 	#if (TEST_X == TEST_1)
 
-	/* Wait for TASK_A_DEL_MAX mS */
-	HAL_Delay(TASK_A_DEL_MAX);
+	/* Here another code */
 
 	#endif
 
